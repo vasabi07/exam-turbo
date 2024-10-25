@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  image String?
+  isTeacher Boolean @default(false)
+  teachers StudentTeacher[] 
+  answerPapers AnswerPaper[]
+}
+
+model Teacher {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  isTeacher Boolean @default(true)
+  password String
+  image String?
+  QPs QP[]
+  students StudentTeacher[] 
+}
+
+model StudentTeacher {
+  StudentId String
+  TeacherId String
+  student Student @relation(fields: [StudentId],references: [id])
+  teacher Teacher @relation(fields: [TeacherId],references: [id])
+  @@id([StudentId,TeacherId])
+}
+
+model Question {
+  id String @id @default(uuid())
+  question String
+  QPId String
+  QP QP @relation(fields: [QPId],references: [id])
+  Answer Answer[]
+}
+
+model QP {
+  id String @id @default(uuid())
+  teacherId String
+  author Teacher @relation(fields: [teacherId], references: [id])
+  Questions Question[]
+  answerPaper AnswerPaper[]
+}
+
+model AnswerPaper {
+  id String @id @default(uuid())
+  StudentId String
+  student Student @relation(fields: [StudentId],references: [id])
+  QPId String 
+  QP QP @relation(fields: [QPId],references: [id])
+  Answers Answer[]
+  @@unique([StudentId,QPId])
+}
+
+model Answer {
+  id String @id @default(uuid())
+  answer String
+  QuestionId String 
+  question Question @relation(fields: [QuestionId], references: [id])
+  answerPaperId String
+  answerpaper AnswerPaper @relation(fields: [answerPaperId],references: [id])
+}
+
